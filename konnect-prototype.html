@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Konnect – First wash (D4 prototype)</title>
+<style>
+/* ============ DESIGN SYSTEM (D4 Part B2) ============
+   Palette: 1 brand + neutrals + 3 semantic colours. All text pairs >= 4.5:1.
+   Type scale (3 levels): --t1 26px heading, --t2 20px sub/label, --t3 18px body (no text below 16px).
+   Spacing scale: 4 / 8 / 16 / 24 / 32.                                     */
+:root{
+  --ink:#1B1F23; --muted:#4A5560; --line:#C9D0D7; --surface:#FFFFFF; --bg:#F2F4F6;
+  --brand:#0B5CAD; --brand-ink:#FFFFFF; --brand-dark:#084A8C;
+  --ok:#14692F; --ok-bg:#E3F4E8;
+  --warn:#7A5200; --warn-bg:#FFF4D1;
+  --err:#B42318; --err-bg:#FDE8E6;
+  --focus:#0B5CAD;
+  --t1:26px; --t2:20px; --t3:18px;
+  --s1:4px; --s2:8px; --s3:16px; --s4:24px; --s5:32px;
+  --r:12px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:400 var(--t3)/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Nastaliq Urdu","Noto Sans Arabic",sans-serif}
+[lang="ur"] body, html[lang="ur"]{line-height:1.9}
+.app{max-width:520px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;background:var(--surface)}
+h1,h2,h3{margin:0}
+h1{font-size:var(--t2);font-weight:700}
+h2{font-size:var(--t1);font-weight:700;line-height:1.25}
+h3{font-size:var(--t2);font-weight:700}
+p{margin:0 0 var(--s3)}
+.visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Header */
+header.top{display:flex;align-items:center;gap:var(--s2);padding:var(--s3);border-bottom:1px solid var(--line);background:var(--surface)}
+header.top .brandname{flex:1}
+header.top .model{display:block;font-size:16px;color:var(--muted);font-weight:400}
+
+/* Buttons: one styled version, states default/hover/focus/active/disabled/loading */
+.btn{font:inherit;font-weight:600;min-height:48px;padding:var(--s2) var(--s3);border-radius:var(--r);border:2px solid var(--brand);background:var(--brand);color:var(--brand-ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:var(--s2)}
+.btn:hover{background:var(--brand-dark);border-color:var(--brand-dark)}
+.btn:active{transform:translateY(1px);background:#063a6e}
+.btn.secondary{background:var(--surface);color:var(--brand)}
+.btn.secondary:hover{background:#E8F0F9}
+.btn.small{min-height:44px;font-size:16px;padding:var(--s1) var(--s3)}
+.btn[disabled],.btn[aria-disabled="true"]{background:#E3E7EB;border-color:#E3E7EB;color:#5E6873;cursor:not-allowed;transform:none}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.btn.block{width:100%}
+.btn.wrong,.btn.wrong:hover{background:var(--err-bg);border-color:var(--err);color:var(--err)}
+
+main{flex:1;padding:var(--s3)}
+.progress{display:flex;gap:var(--s1);margin:0 0 var(--s2)}
+.progress span{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.progress span.done{background:var(--brand)}
+.progress span.now{background:var(--ink)}
+.stepcount{font-size:16px;color:var(--muted);margin-bottom:var(--s1);display:block}
+
+/* Task cards on home */
+.card{border:2px solid var(--line);border-radius:var(--r);padding:var(--s3);margin-bottom:var(--s3);background:var(--surface)}
+.taskbtn{width:100%;text-align:start;font:inherit;background:var(--surface);border:2px solid var(--brand);border-radius:var(--r);padding:var(--s3);cursor:pointer;color:var(--ink);display:block;margin-bottom:var(--s2)}
+.taskbtn:hover{background:#E8F0F9}
+.taskbtn[disabled]{border-color:var(--line);color:#5E6873;cursor:not-allowed;background:var(--bg)}
+.taskbtn strong{display:block;font-size:var(--t2)}
+
+/* Camera stage */
+.stage{position:relative;width:100%;aspect-ratio:3/4;background:#30363D;border-radius:var(--r);overflow:hidden;margin-bottom:var(--s3)}
+.stage video,.stage svg.machine{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.stage.placing{cursor:crosshair;touch-action:manipulation}
+.stage.placing .ring,.stage.placing .tag{pointer-events:none}
+.stage .mode{position:absolute;bottom:var(--s2);inset-inline-start:var(--s2);background:rgba(0,0,0,.72);color:#fff;font-size:16px;padding:2px var(--s2);border-radius:6px;z-index:3}
+.ring{position:absolute;border:4px solid #fff;border-radius:14px;box-shadow:0 0 0 3px rgba(0,0,0,.65),inset 0 0 0 3px rgba(0,0,0,.35);z-index:2;transition:border-color .2s}
+.ring.searching{border-style:dashed;animation:pulse 1.2s infinite}
+.ring.found{border-color:#7CF29A}
+.ring.bad{border-color:#FF8A80}
+.ring.pick{cursor:pointer;background:rgba(255,255,255,.08)}
+.ring.pick:hover{background:rgba(255,255,255,.2)}
+@keyframes pulse{50%{opacity:.45}}
+@media (prefers-reduced-motion:reduce){.ring.searching{animation:none}.spinner{animation:none!important}}
+.fullline{position:absolute;border-top:5px dashed #fff;box-shadow:0 2px 0 rgba(0,0,0,.6),0 -2px 0 rgba(0,0,0,.6);z-index:2}
+.tag{position:absolute;z-index:3;background:#fff;color:var(--ink);border-radius:8px;padding:2px var(--s2);font-size:16px;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.5);max-width:70%}
+.tag.normal{border-inline-start:6px solid var(--ok)}
+.tag.bad{border-inline-start:6px solid var(--err)}
+
+/* Status / feedback messages */
+.status{border-radius:var(--r);padding:var(--s3);margin-bottom:var(--s3);border:2px solid transparent;display:flex;gap:var(--s2);align-items:flex-start}
+.status .ico{font-weight:800;flex:0 0 auto;width:28px;height:28px;border-radius:50%;display:inline-grid;place-items:center;font-size:16px}
+.status.info{background:var(--bg);border-color:var(--line)}
+.status.ok{background:var(--ok-bg);border-color:var(--ok)}
+.status.ok .ico{background:var(--ok);color:#fff}
+.status.err{background:var(--err-bg);border-color:var(--err)}
+.status.err .ico{background:var(--err);color:#fff}
+.status.loading .ico{border:3px solid var(--line);border-top-color:var(--brand);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.status p{margin:0}
+.status .actions{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s2)}
+.caution{background:var(--warn-bg);border-inline-start:6px solid var(--warn);padding:var(--s2) var(--s3);border-radius:8px;margin-bottom:var(--s3);color:#3D2900}
+.caution strong{color:var(--warn)}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2);margin-bottom:var(--s3)}
+.check{display:flex;gap:var(--s2);align-items:center;min-height:48px;padding:var(--s2);border:2px solid var(--line);border-radius:var(--r);margin-bottom:var(--s2);cursor:pointer}
+.check input{width:24px;height:24px}
+.navrow{display:flex;gap:var(--s2);margin-top:var(--s3)}
+.navrow .btn{flex:1}
+
+/* Dialog: Is this normal? */
+dialog{border:none;border-radius:var(--r);padding:0;max-width:480px;width:calc(100% - 32px)}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+.dlg{padding:var(--s4)}
+.dlg .list button{margin-bottom:var(--s2)}
+.empty{border:2px dashed var(--line);border-radius:var(--r);padding:var(--s3);color:var(--muted);margin-bottom:var(--s3)}
+
+/* Wizard-of-Oz facilitator panel (clearly separated, not part of the user UI) */
+.wizard{border-top:4px dashed #8A6D00;background:#FFFBEA;padding:var(--s3);font-size:16px}
+.wizard h3{font-size:16px;color:#5A4500;margin-bottom:var(--s2)}
+.wizard .row{display:flex;flex-wrap:wrap;gap:var(--s2);margin-bottom:var(--s2)}
+.wizard .btn{min-height:44px;font-size:16px;background:#5A4500;border-color:#5A4500}
+.wizard .btn.secondary{background:#fff;color:#5A4500}
+footer.foot{padding:var(--s2) var(--s3);font-size:16px;color:var(--muted);border-top:1px solid var(--line);display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1 class="brandname"><span data-t="appname">Konnect</span><span class="model" data-t="model">Panasonic NA-F135A1 washing machine</span></h1>
+    <button class="btn secondary small" id="langBtn" type="button" lang="ur">اردو</button>
+    <button class="btn small" id="normalBtn" type="button" data-t="isNormalBtn">Is this normal?</button>
+  </header>
+
+  <main id="main" tabindex="-1"></main>
+
+  <div id="live" class="visually-hidden" aria-live="polite"></div>
+
+  <footer class="foot">
+    <button class="btn secondary small" type="button" id="wizToggle" aria-expanded="false" aria-controls="wizard">Facilitator controls (Wizard-of-Oz)</button>
+    <span>D4 prototype · Team 05 Konnect</span>
+  </footer>
+  <section class="wizard" id="wizard" hidden aria-label="Facilitator controls">
+    <h3>Facilitator (Wizard-of-Oz) — simulates part recognition. Not part of the user interface.</h3>
+    <div class="row">
+      <label><input type="checkbox" id="wizAuto" checked> Drawing mode: auto-recognise after 2 s (live camera: you tap to place the ring)</label>
+    </div>
+    <div class="row">
+      <button class="btn small" type="button" id="wizFound">Recognised</button>
+      <button class="btn small secondary" type="button" id="wizMiss">Not recognised</button>
+      <button class="btn small secondary" type="button" id="wizClick">Lid click heard</button>
+      <button class="btn small secondary" type="button" id="wizFail">Make next check fail</button>
+    </div>
+    <div class="row">
+      <button class="btn small secondary" type="button" id="wizCam">Force drawing mode</button>
+      <button class="btn small secondary" type="button" id="wizReset">Reset to home</button>
+      <button class="btn small secondary" type="button" id="wizLog">Download session log</button>
+    </div>
+  </section>
+</div>
+
+<dialog id="normalDlg" aria-labelledby="normalTitle">
+  <div class="dlg" id="normalBody"></div>
+</dialog>
+
+<script>
+/* ================= TEXT (English / Urdu) ================= */
+const T = {
+ en:{
+  appname:"Konnect", model:"Panasonic NA-F135A1 washing machine", isNormalBtn:"Is this normal?",
+  homeTitle:"What do you want to do?", homeIntro:"Point your phone at the machine. Konnect names each part and shows one step at a time.",
+  taskFirst:"First wash", taskFirstSub:"Set up and start a heavy load (6 steps)",
+  taskOther:"Other tasks", taskOtherSub:"Not in this prototype",
+  modelCheck:"Your machine: Panasonic NA-F135A1 (top-load). Wrong machine? Not in this prototype.",
+  stepOf:(n,t)=>`Step ${n} of ${t}`,
+  back:"Back", next:"Next", finish:"Finish", tryAgain:"Try again", useDrawing:"Show a drawing instead", useCamera:"Use camera",
+  camLoading:"Starting camera…", camOff:"Camera is off or blocked. Allow camera access in your browser settings, or use the drawing of your machine.",
+  modeCam:"Live camera", modeDraw:"Drawing of NA-F135A1",
+  looking:p=>`Looking for the ${p}… Line it up inside the white frame.`,
+  found:p=>`Found the ${p}. It is ringed in the view.`,
+  notFound:p=>`Can't see the ${p}. Lift the lid fully, hold the phone about 40 cm away, and make sure the area is well lit.`,
+  zoom:"Enlarge symbol",
+  place:p=>`Tap the ${p} on the camera view to place the ring on it. Keyboard: arrow keys to move, then Enter.`,
+  placeHere:"Place ring at the marked spot", checking:p=>`Checking the ${p}…`, moveRing:"Move ring",
+  s1t:"Find the detergent tray", s1p:"detergent tray",
+  s1i:"Lift the lid. The detergent tray is inside the lid, on the left. It is not a drawer at the front.",
+  s1c:"Do not pour detergent onto the clothes.",
+  s1tag:"Detergent tray (inside lid)",
+  s2t:"Pour detergent into MAIN WASH", s2p:"detergent tray",
+  s2i:"The tray has two compartments. Tap the one you will pour detergent into.",
+  s2c:"Use the amount for the water level shown on the display (manual, p. 36).",
+  main:"MAIN WASH", soft:"SOFTENER",
+  s2ok:"Correct. Detergent goes in MAIN WASH.",
+  s2err:"That is SOFTENER (flower symbol). Detergent goes in MAIN WASH, the compartment ringed on the left. Choose again.",
+  choose:"Choose again",
+  s3t:"Load the drum up to the line", s3p:"drum",
+  s3i:"Put the laundry in. Keep the top of the load below the dashed “full to here” line. You don't need to weigh anything.",
+  s3c:"Maximum is 13.5 kg. The line shows it for you.",
+  s3tag:"Full to here",
+  s3q:"Where is the top of your load?", below:"Below the line", above:"Above the line",
+  s3ok:"Good. Below the line is fine — you don't need to load less to be safe.",
+  s3err:"Too much for one wash. Take some items out until the top of the load is below the dashed line, then check again.",
+  checkAgain:"Check again",
+  s4t:"Power on and read the display", s4p:"display",
+  s4i:"Press Power. The display will show a number.",
+  s4tag:"32 = wash time in minutes. Normal.",
+  s4ok:"“32” is the wash time in minutes. It is normal. It counts down after you press Start.",
+  s5t:"Choose Heavy/Bedding", s5p:"control panel",
+  s5i:"Press the program button until Heavy/Bedding is lit. Leave the water level on Auto.",
+  s5tagA:"Heavy/Bedding", s5tagB:"Water level: Auto",
+  s5c1:"Heavy/Bedding is lit", s5c2:"Water level shows Auto",
+  s5hint:"Tick both to continue.",
+  s6t:"Close the lid and press Start", s6p:"lid",
+  s6i:"Check the detergent is in MAIN WASH, close the lid, then press Start.",
+  s6c:"Do not open the lid while it is locked.",
+  pressed:"I pressed Start", listening:"Waiting for the machine… You may hear a click.",
+  s6tag:"Click = lid locked. Normal.",
+  s6ok:"The click was the lid locking. That is normal. The display now counts down from 32.",
+  doneT:"Your wash has started", doneP:"Everything you did matches the steps. The lid stays locked while washing and the display counts down.",
+  again:"Start again", home:"Home",
+  nTitle:"Is this normal?", nIntro:"Tap what you see or hear.", nEmpty:"Point the camera at a light, number or part, or choose from the list.",
+  n32:"The display shows 32", n32a:"Normal. 32 is the wash time in minutes for this program. It counts down after Start.",
+  nClick:"The lid made a click", nClicka:"Normal. The lid locks when the wash starts. It unlocks when the wash ends.",
+  nCount:"The number is going down", nCounta:"Normal. That is the time left, in minutes.",
+  nOther:"Something else", nOthera:"This prototype only knows the three signals above. The full version would open the troubleshooting page of the manual for your model.",
+  close:"Close", backList:"Back to list"
+ },
+ ur:{
+  appname:"Konnect", model:"پیناسونک NA-F135A1 واشنگ مشین", isNormalBtn:"کیا یہ نارمل ہے؟",
+  homeTitle:"آپ کیا کرنا چاہتے ہیں؟", homeIntro:"فون کو مشین کی طرف کریں۔ Konnect ہر پرزے کا نام بتاتا ہے اور ایک وقت میں ایک قدم دکھاتا ہے۔",
+  taskFirst:"پہلی دھلائی", taskFirstSub:"بھاری لوڈ تیار کریں اور شروع کریں (6 قدم)",
+  taskOther:"دوسرے کام", taskOtherSub:"اس پروٹوٹائپ میں شامل نہیں",
+  modelCheck:"آپ کی مشین: پیناسونک NA-F135A1 (ٹاپ لوڈ)۔ کوئی اور مشین؟ اس پروٹوٹائپ میں شامل نہیں۔",
+  stepOf:(n,t)=>`قدم ${n} از ${t}`,
+  back:"پیچھے", next:"آگے", finish:"مکمل", tryAgain:"دوبارہ کوشش کریں", useDrawing:"اس کی جگہ تصویر دکھائیں", useCamera:"کیمرا استعمال کریں",
+  camLoading:"کیمرا شروع ہو رہا ہے…", camOff:"کیمرا بند یا بلاک ہے۔ براؤزر کی سیٹنگز میں کیمرے کی اجازت دیں، یا اپنی مشین کی تصویر استعمال کریں۔",
+  modeCam:"لائیو کیمرا", modeDraw:"NA-F135A1 کی تصویر",
+  looking:p=>`${p} تلاش کیا جا رہا ہے… اسے سفید فریم کے اندر لائیں۔`,
+  found:p=>`${p} مل گیا۔ اس کے گرد دائرہ بنا دیا گیا ہے۔`,
+  notFound:p=>`${p} نظر نہیں آ رہا۔ ڈھکن پورا اٹھائیں، فون تقریباً 40 سینٹی میٹر دور رکھیں، اور روشنی کا خیال رکھیں۔`,
+  zoom:"نشان بڑا کریں",
+  place:p=>`کیمرا ویو میں ${p} پر ٹیپ کریں تاکہ دائرہ اس پر لگ جائے۔ کی بورڈ: ایرو کیز سے حرکت دیں، پھر Enter دبائیں۔`,
+  placeHere:"نشان زدہ جگہ پر دائرہ لگائیں", checking:p=>`${p} چیک کیا جا رہا ہے…`, moveRing:"دائرہ ہٹائیں",
+  s1t:"ڈٹرجنٹ ٹرے تلاش کریں", s1p:"ڈٹرجنٹ ٹرے",
+  s1i:"ڈھکن اٹھائیں۔ ڈٹرجنٹ ٹرے ڈھکن کے اندر بائیں طرف ہے۔ یہ سامنے والا دراز نہیں ہے۔",
+  s1c:"ڈٹرجنٹ کپڑوں پر نہ ڈالیں۔",
+  s1tag:"ڈٹرجنٹ ٹرے (ڈھکن کے اندر)",
+  s2t:"ڈٹرجنٹ MAIN WASH میں ڈالیں", s2p:"ڈٹرجنٹ ٹرے",
+  s2i:"ٹرے کے دو خانے ہیں۔ جس خانے میں ڈٹرجنٹ ڈالیں گے اس پر ٹیپ کریں۔",
+  s2c:"ڈسپلے پر دکھائے گئے پانی کے لیول کے مطابق مقدار استعمال کریں (مینوئل، صفحہ 36)۔",
+  main:"MAIN WASH (مین واش)", soft:"SOFTENER (سافٹنر)",
+  s2ok:"درست۔ ڈٹرجنٹ MAIN WASH میں جاتا ہے۔",
+  s2err:"یہ SOFTENER ہے (پھول کا نشان)۔ ڈٹرجنٹ MAIN WASH میں جاتا ہے، بائیں طرف دائرے والا خانہ۔ دوبارہ منتخب کریں۔",
+  choose:"دوبارہ منتخب کریں",
+  s3t:"ڈرم کو لائن تک بھریں", s3p:"ڈرم",
+  s3i:"کپڑے ڈالیں۔ لوڈ کا اوپری حصہ ڈیش والی “یہاں تک بھریں” لائن سے نیچے رکھیں۔ وزن کرنے کی ضرورت نہیں۔",
+  s3c:"زیادہ سے زیادہ 13.5 کلو۔ لائن آپ کو یہ دکھاتی ہے۔",
+  s3tag:"یہاں تک بھریں",
+  s3q:"آپ کے لوڈ کا اوپری حصہ کہاں ہے؟", below:"لائن سے نیچے", above:"لائن سے اوپر",
+  s3ok:"ٹھیک ہے۔ لائن سے نیچے بالکل درست ہے — احتیاط کے لیے کم ڈالنے کی ضرورت نہیں۔",
+  s3err:"ایک دھلائی کے لیے زیادہ ہے۔ کچھ کپڑے نکالیں جب تک لوڈ ڈیش والی لائن سے نیچے نہ آ جائے، پھر دوبارہ چیک کریں۔",
+  checkAgain:"دوبارہ چیک کریں",
+  s4t:"پاور آن کریں اور ڈسپلے پڑھیں", s4p:"ڈسپلے",
+  s4i:"پاور دبائیں۔ ڈسپلے پر ایک نمبر آئے گا۔",
+  s4tag:"32 = دھلائی کا وقت منٹوں میں۔ نارمل۔",
+  s4ok:"“32” دھلائی کا وقت منٹوں میں ہے۔ یہ نارمل ہے۔ اسٹارٹ دبانے کے بعد یہ کم ہوتا جائے گا۔",
+  s5t:"Heavy/Bedding منتخب کریں", s5p:"کنٹرول پینل",
+  s5i:"پروگرام بٹن دبائیں جب تک Heavy/Bedding روشن نہ ہو جائے۔ پانی کا لیول Auto پر رہنے دیں۔",
+  s5tagA:"Heavy/Bedding", s5tagB:"پانی کا لیول: Auto",
+  s5c1:"Heavy/Bedding روشن ہے", s5c2:"پانی کا لیول Auto دکھا رہا ہے",
+  s5hint:"آگے بڑھنے کے لیے دونوں پر نشان لگائیں۔",
+  s6t:"ڈھکن بند کریں اور اسٹارٹ دبائیں", s6p:"ڈھکن",
+  s6i:"چیک کریں کہ ڈٹرجنٹ MAIN WASH میں ہے، ڈھکن بند کریں، پھر اسٹارٹ دبائیں۔",
+  s6c:"لاک ہونے پر ڈھکن کھولنے کی کوشش نہ کریں۔",
+  pressed:"میں نے اسٹارٹ دبا دیا", listening:"مشین کا انتظار… آپ کو ایک کلک سنائی دے سکتا ہے۔",
+  s6tag:"کلک = ڈھکن لاک۔ نارمل۔",
+  s6ok:"کلک ڈھکن کے لاک ہونے کی آواز تھی۔ یہ نارمل ہے۔ ڈسپلے اب 32 سے الٹی گنتی کر رہا ہے۔",
+  doneT:"آپ کی دھلائی شروع ہو گئی", doneP:"آپ نے سب قدم درست کیے۔ دھلائی کے دوران ڈھکن لاک رہتا ہے اور ڈسپلے الٹی گنتی کرتا ہے۔",
+  again:"دوبارہ شروع کریں", home:"ہوم",
+  nTitle:"کیا یہ نارمل ہے؟", nIntro:"جو آپ دیکھ یا سن رہے ہیں اس پر ٹیپ کریں۔", nEmpty:"کیمرا کسی لائٹ، نمبر یا پرزے کی طرف کریں، یا فہرست سے منتخب کریں۔",
+  n32:"ڈسپلے پر 32 لکھا ہے", n32a:"نارمل۔ 32 اس پروگرام کے لیے دھلائی کا وقت منٹوں میں ہے۔ اسٹارٹ کے بعد یہ کم ہوتا ہے۔",
+  nClick:"ڈھکن نے کلک کی آواز دی", nClicka:"نارمل۔ دھلائی شروع ہونے پر ڈھکن لاک ہو جاتا ہے، اور ختم ہونے پر کھل جاتا ہے۔",
+  nCount:"نمبر کم ہو رہا ہے", nCounta:"نارمل۔ یہ باقی وقت ہے، منٹوں میں۔",
+  nOther:"کچھ اور", nOthera:"یہ پروٹوٹائپ صرف اوپر والے تین اشارے جانتا ہے۔ مکمل ورژن آپ کے ماڈل کے مینوئل کا ٹربل شوٹنگ صفحہ کھولے گا۔",
+  close:"بند کریں", backList:"فہرست پر واپس"
+ }
+};
+let lang="en";
+const t=(k,...a)=>{const v=T[lang][k]??T.en[k];return typeof v==="function"?v(...a):v;};
+
+/* ================= GEOMETRY: pre-placed overlay positions (% of stage) ================= */
+const G = {
+  tray:{x:8,y:20,w:42,h:17}, main:{x:8,y:20,w:21,h:17}, soft:{x:30,y:20,w:20,h:17},
+  drum:{x:14,y:42,w:72,h:54}, line:{x:16,y:55,w:68},
+  display:{x:40,y:4,w:20,h:10}, power:{x:4,y:4,w:14,h:10},
+  program:{x:62,y:4,w:16,h:10}, water:{x:79,y:4,w:17,h:10}, panel:{x:2,y:2,w:96,h:14},
+  lid:{x:4,y:17,w:92,h:24}
+};
+const box=(g)=>`left:${g.x}%;top:${g.y}%;width:${g.w}%;height:${g.h}%`;
+
+/* Tap-to-place: on the live camera the user puts the ring on the real part once. Every other overlay
+   item of that step group (compartments, full line, tags) moves with it. In drawing mode offsets are 0. */
+const ANCH={tray:"tray",main:"tray",soft:"tray",drum:"drum",line:"drum",display:"display",
+            panel:"panel",program:"panel",water:"panel",power:"panel",lid:"lid"};
+const STEP_ANCH={1:"tray",2:"tray",3:"drum",4:"display",5:"panel",6:"lid"};
+const ctr=a=>({x:G[a].x+G[a].w/2,y:G[a].y+(G[a].h||0)/2});
+const clampD=(a,dx,dy)=>{const g=G[a];return{dx:Math.max(-g.x,Math.min(100-g.x-g.w,dx)),dy:Math.max(-g.y,Math.min(100-g.y-g.h,dy))};};
+function offFor(a){
+  if(S.camera!=="live")return{dx:0,dy:0};
+  if(S.screen==="step"&&S.recog==="searching"&&a===STEP_ANCH[S.step]&&S.cursor){const c=ctr(a);return clampD(a,S.cursor.x-c.x,S.cursor.y-c.y);}
+  return S.off[a]||{dx:0,dy:0};
+}
+function Gs(k){const g=G[k],o=offFor(ANCH[k]);return{...g,x:g.x+o.dx,y:g.y+o.dy};}
+
+/* Mock backend (static, runs in the page): event log in localStorage + simulated recognition service */
+function log(ev,d={}){try{const L=JSON.parse(localStorage.getItem("konnect_log")||"[]");
+  L.push({t:new Date().toISOString(),ev,step:S.step,lang,cam:S.camera,...d});
+  localStorage.setItem("konnect_log",JSON.stringify(L.slice(-300)));}catch(e){}}
+function mockRecognise(){return new Promise(res=>setTimeout(()=>{const ok=!S.forceMiss;S.forceMiss=false;res({ok});},700));}
+
+/* Grayscale stand-in drawing of the NA-F135A1 seen from the front, lid up (labelled, not a photo) */
+const MACHINE_SVG = `<svg class="machine" viewBox="0 0 300 400" preserveAspectRatio="none" role="img" aria-label="Drawing of the washing machine seen from above, lid open: control panel at the top, detergent tray inside the lid on the left, drum below.">
+ <rect width="300" height="400" fill="#9AA3AD"/>
+ <rect x="6" y="8" width="288" height="56" rx="6" fill="#E9ECEF" stroke="#3B4148" stroke-width="2"/>
+ <rect x="14" y="20" width="36" height="28" rx="5" fill="#fff" stroke="#3B4148"/><text aria-hidden="true" x="32" y="38" font-size="11" text-anchor="middle" fill="#222">⏻</text>
+ <rect x="122" y="18" width="56" height="32" rx="3" fill="#1D2125"/><text aria-hidden="true" x="150" y="41" font-size="20" text-anchor="middle" fill="#B8F5C8" font-family="monospace">32</text>
+ <rect x="188" y="20" width="44" height="28" rx="5" fill="#fff" stroke="#3B4148"/><text aria-hidden="true" x="210" y="38" font-size="9" text-anchor="middle" fill="#222">▤ ▦</text>
+ <rect x="240" y="20" width="46" height="28" rx="5" fill="#fff" stroke="#3B4148"/><text aria-hidden="true" x="263" y="38" font-size="9" text-anchor="middle" fill="#222">≋ A</text>
+ <rect x="10" y="68" width="280" height="96" rx="8" fill="#D5DADF" stroke="#3B4148" stroke-width="2"/>
+ <rect x="26" y="82" width="122" height="64" rx="5" fill="#F5F6F7" stroke="#3B4148" stroke-width="2"/>
+ <line x1="87" y1="82" x2="87" y2="146" stroke="#3B4148" stroke-width="2"/>
+ <text aria-hidden="true" x="56" y="120" font-size="18" text-anchor="middle" fill="#333">▢</text>
+ <text aria-hidden="true" x="118" y="120" font-size="18" text-anchor="middle" fill="#333">✿</text>
+ <ellipse cx="150" cy="276" rx="108" ry="108" fill="#BFC5CB" stroke="#3B4148" stroke-width="3"/>
+ <ellipse cx="150" cy="276" rx="88" ry="88" fill="#AEB5BC" stroke="#3B4148" stroke-width="1.5"/>
+ <ellipse cx="150" cy="276" rx="22" ry="22" fill="#8C949C" stroke="#3B4148"/>
+</svg>`;
+
+/* ================= STATE ================= */
+const S = {screen:"home", step:0, camera:"unknown", stream:null, forceDraw:false,
+           recog:"idle", pick:null, load:null, c1:false, c2:false, started:"no", timer:null,
+           off:{}, cursor:null, forceMiss:false};
+const STEPS=6;
+const main=document.getElementById("main");
+const live=document.getElementById("live");
+const announce=(m)=>{live.textContent="";setTimeout(()=>live.textContent=m,50);};
+
+/* ================= CAMERA (genuinely built) ================= */
+async function ensureCamera(){
+  if(S.forceDraw){S.camera="draw";return;}
+  if(S.stream){S.camera="live";return;}
+  if(!navigator.mediaDevices?.getUserMedia){S.camera="off";return;}
+  S.camera="loading"; render();
+  try{
+    S.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false});
+    S.camera="live";
+  }catch(e){S.camera="off";}
+  render();
+}
+function stageHTML(overlay){
+  const isLive=S.camera==="live";
+  const bg = isLive ? `<video id="vid" autoplay playsinline muted aria-hidden="true"></video>` : MACHINE_SVG;
+  const placing=isLive&&S.recog==="searching";
+  return `<div class="stage${placing?" placing":""}" role="group" ${placing?'tabindex="0"':""} aria-label="${placing?t("place",partName()):isLive?t("modeCam"):t("modeDraw")}">
+    ${bg}<span class="mode" aria-hidden="true">${isLive?"● "+t("modeCam"):t("modeDraw")}</span>${overlay||""}</div>`;
+}
+function attachVideo(){const v=document.getElementById("vid");if(v&&S.stream){v.srcObject=S.stream;}}
+
+/* ================= RECOGNITION (Wizard-of-Oz) ================= */
+function startRecog(){
+  clearTimeout(S.timer); S.recog="searching";
+  const live=S.camera==="live", a=STEP_ANCH[S.step];
+  if(live){const c=ctr(a),o=S.off[a];S.cursor=o?{x:c.x+o.dx,y:c.y+o.dy}:c;}
+  render();
+  announce(live?t("place",partName()):t("looking",partName()));
+  /* Drawing mode: positions are exact, so recognition is simulated by a timer. Live mode: the user places the ring. */
+  if(!live && document.getElementById("wizAuto").checked){S.timer=setTimeout(()=>setRecog("found"),2000);}
+}
+function placeAt(pt){
+  if(S.screen!=="step"||S.recog!=="searching"||S.camera!=="live")return;
+  const a=STEP_ANCH[S.step],c=ctr(a);
+  S.off[a]=clampD(a,pt.x-c.x,pt.y-c.y);
+  S.recog="checking"; log("place",{anchor:a}); render(); focusEl("#statusMsg");
+  announce(t("checking",partName()));
+  mockRecognise().then(r=>{if(S.recog==="checking")setRecog(r.ok?"found":"miss");});
+}
+function moveCursorRing(){
+  const a=STEP_ANCH[S.step],c=ctr(a),o=clampD(a,S.cursor.x-c.x,S.cursor.y-c.y);
+  S.cursor={x:c.x+o.dx,y:c.y+o.dy};
+  const r=main.querySelector(".stage .ring.searching");
+  if(r){r.style.left=(G[a].x+o.dx)+"%";r.style.top=(G[a].y+o.dy)+"%";}
+}
+function setRecog(v){
+  clearTimeout(S.timer);
+  if(S.screen!=="step")return;
+  if(S.step===6 && S.started==="waiting" && v==="found"){heardClick();return;}
+  if(S.camera==="live"&&S.recog==="searching"&&v==="found"&&S.cursor){
+    const a=STEP_ANCH[S.step],c=ctr(a);S.off[a]=clampD(a,S.cursor.x-c.x,S.cursor.y-c.y);}
+  S.recog=v; log("recog",{result:v}); render();
+  announce(v==="found"?t("found",partName()):t("notFound",partName()));
+  if(v==="miss")focusEl("#statusMsg");
+}
+function partName(){return t("s"+S.step+"p");}
+
+/* ================= RENDER ================= */
+function statusBox(kind,text,actions=""){
+  const ico={ok:"✓",err:"!",info:"i",loading:""}[kind];
+  return `<div class="status ${kind}" id="statusMsg" tabindex="-1" ${kind==="err"?'role="alert"':''}>
+    <span class="ico" aria-hidden="true">${ico}</span><div><p>${text}</p>${actions?`<div class="actions">${actions}</div>`:""}</div></div>`;
+}
+function progress(){
+  let h='<div class="progress" aria-hidden="true">';
+  for(let i=1;i<=STEPS;i++)h+=`<span class="${i<S.step?"done":i===S.step?"now":""}"></span>`;
+  return h+"</div>";
+}
+function render(){
+  document.documentElement.lang=lang; document.documentElement.dir=lang==="ur"?"rtl":"ltr";
+  document.querySelectorAll("[data-t]").forEach(el=>el.textContent=t(el.dataset.t));
+  const lb=document.getElementById("langBtn");
+  lb.textContent=lang==="en"?"اردو":"English"; lb.lang=lang==="en"?"ur":"en";
+  lb.setAttribute("aria-label",lang==="en"?"Switch to Urdu":"انگریزی میں تبدیل کریں");
+  if(S.screen==="home")return renderHome();
+  if(S.screen==="done")return renderDone();
+  renderStep();
+}
+function renderHome(){
+  main.innerHTML=`<h2 id="screenTitle" tabindex="-1">${t("homeTitle")}</h2>
+   <p>${t("homeIntro")}</p>
+   <button class="taskbtn" type="button" id="goFirst"><strong>${t("taskFirst")}</strong>${t("taskFirstSub")}</button>
+   <button class="taskbtn" type="button" disabled><strong>${t("taskOther")}</strong>${t("taskOtherSub")}</button>
+   <p style="color:var(--muted);font-size:16px">${t("modelCheck")}</p>`;
+  document.getElementById("goFirst").onclick=()=>goStep(1);
+}
+function navRow(canNext,last){
+  return `<div class="navrow">
+    <button class="btn secondary" type="button" id="backBtn">${t("back")}</button>
+    <button class="btn" type="button" id="nextBtn" ${canNext?"":'aria-disabled="true"'}>${last?t("finish"):t("next")}</button></div>`;
+}
+function camStatus(){
+  if(S.camera==="loading")return statusBox("loading",t("camLoading"));
+  if(S.camera==="off")return statusBox("err",t("camOff"),`<button class="btn small" type="button" data-act="draw">${t("useDrawing")}</button>`);
+  return "";
+}
+function recogStatus(){
+  if(S.recog==="searching"&&S.camera==="live")return statusBox("info",t("place",partName()),
+     `<button class="btn small" type="button" data-act="placehere">${t("placeHere")}</button>`);
+  if(S.recog==="searching")return statusBox("loading",t("looking",partName()));
+  if(S.recog==="checking")return statusBox("loading",t("checking",partName()));
+  if(S.recog==="miss")return statusBox("err",t("notFound",partName()),
+     `<button class="btn small" type="button" data-act="retry">${t("tryAgain")}</button>
+      <button class="btn small secondary" type="button" data-act="draw">${t("useDrawing")}</button>`);
+  return "";
+}
+function ring(g,cls,label,extra=""){
+  return `<div class="ring ${cls}" style="${box(g)}" ${extra}></div>`+(label?`<span class="tag ${cls==="bad"?"bad":"normal"}" style="left:${g.x}%;top:calc(${g.y+g.h}% + 4px)">${label}</span>`:"");
+}
+function renderStep(){
+  const n=S.step, found=S.recog==="found";
+  const rc = S.recog==="searching"?"searching":found?"found":S.recog==="miss"?"bad":"searching";
+  let overlay="", body="", canNext=false, caution="";
+  const cam=camStatus();
+  if(n===1){
+    overlay=ring(Gs("tray"),rc,found?t("s1tag"):"");
+    body=recogStatus()||(found?statusBox("ok",t("found",partName())):"");
+    caution=t("s1c"); canNext=found;
+  }
+  if(n===2){
+    if(found){
+      const mc=S.pick==="main"?"found":S.pick==="soft"?"":"pick", sc=S.pick==="soft"?"bad":"pick";
+      overlay=`<button class="ring ${mc} pick" style="${box(Gs("main"))}" data-pick="main" aria-hidden="true" tabindex="-1"></button>
+               <button class="ring ${sc} pick" style="${box(Gs("soft"))}" data-pick="soft" aria-hidden="true" tabindex="-1"></button>
+               <span class="tag normal" style="left:${Gs("main").x}%;top:${Gs("main").y+Gs("main").h+1}%">${t("main")}</span>
+               <span class="tag ${S.pick==="soft"?"bad":"normal"}" style="left:${Gs("soft").x+2}%;top:${Gs("soft").y+Gs("soft").h+8}%">${t("soft")}</span>`;
+      body=`<fieldset style="border:0;padding:0;margin:0"><legend class="visually-hidden">${t("s2i")}</legend><div class="choice">
+        <button class="btn ${S.pick==="main"?"":"secondary"}" type="button" data-pick="main" aria-pressed="${S.pick==="main"}">${t("main")}</button>
+        <button class="btn ${S.pick==="soft"?"wrong":"secondary"}" type="button" data-pick="soft" aria-pressed="${S.pick==="soft"}">${t("soft")} ✿</button></div></fieldset>`;
+      if(S.pick==="main")body+=statusBox("ok",t("s2ok"));
+      if(S.pick==="soft")body+=statusBox("err",t("s2err"));
+    }else{overlay=ring(Gs("tray"),rc,"");body=recogStatus();}
+    caution=t("s2c"); canNext=S.pick==="main";
+  }
+  if(n===3){
+    overlay=ring(Gs("drum"),rc,"")+(found?`<div class="fullline" style="left:${Gs("line").x}%;top:${Gs("line").y}%;width:${Gs("line").w}%"></div>
+      <span class="tag normal" style="left:${Gs("line").x}%;top:calc(${Gs("line").y}% - 34px)">${t("s3tag")}</span>`:"");
+    if(found){
+      body=`<h3 style="margin-bottom:8px">${t("s3q")}</h3><div class="choice">
+        <button class="btn ${S.load==="below"?"":"secondary"}" type="button" data-load="below" aria-pressed="${S.load==="below"}">${t("below")}</button>
+        <button class="btn ${S.load==="above"?"wrong":"secondary"}" type="button" data-load="above" aria-pressed="${S.load==="above"}">${t("above")}</button></div>`;
+      if(S.load==="below")body+=statusBox("ok",t("s3ok"));
+      if(S.load==="above")body+=statusBox("err",t("s3err"),`<button class="btn small" type="button" data-act="recheck">${t("checkAgain")}</button>`);
+    }else body=recogStatus();
+    caution=t("s3c"); canNext=S.load==="below";
+  }
+  if(n===4){
+    overlay=ring(Gs("display"),rc,found?t("s4tag"):"");
+    body=recogStatus()||(found?statusBox("ok",t("s4ok")):"");
+    canNext=found;
+  }
+  if(n===5){
+    if(found){
+      overlay=ring(Gs("program"),"found","")+ring(Gs("water"),"found","")+
+        `<span class="tag normal" style="left:40%;top:${Gs("program").y+Gs("program").h+2}%">${t("s5tagA")}</span>
+         <span class="tag normal" style="left:52%;top:${Gs("program").y+Gs("program").h+11}%">${t("s5tagB")}</span>`;
+      body=`<label class="check"><input type="checkbox" id="c1" ${S.c1?"checked":""}> ${t("s5c1")}</label>
+            <label class="check"><input type="checkbox" id="c2" ${S.c2?"checked":""}> ${t("s5c2")}</label>
+            ${S.c1&&S.c2?statusBox("ok","✓ "+t("s5t")):`<p id="hint" style="color:var(--muted)">${t("s5hint")}</p>`}`;
+    }else{overlay=ring(Gs("panel"),rc,"");body=recogStatus();}
+    canNext=found&&S.c1&&S.c2;
+  }
+  if(n===6){
+    caution=t("s6c");
+    const lidRing=(cls,label)=>S.camera==="live"?(label?`<span class="tag normal" style="left:4%;top:18%">${label}</span>`:""):ring(Gs("lid"),cls,label);
+    if(S.started==="no"){overlay=lidRing("pick","");body=`<button class="btn block" type="button" data-act="pressed">${t("pressed")}</button>`;}
+    else if(S.started==="waiting"){overlay=lidRing("searching","");body=statusBox("loading",t("listening"));}
+    else{overlay=lidRing("found",t("s6tag"))+`<span class="tag normal" style="left:${Gs("display").x}%;top:${Gs("display").y+Gs("display").h+1}%">32 ↓</span>`;
+         body=statusBox("ok",t("s6ok"));}
+    canNext=S.started==="done";
+  }
+  main.innerHTML=`${progress()}<span class="stepcount">${t("stepOf",n,STEPS)}</span>
+    <h2 id="screenTitle" tabindex="-1">${t("s"+n+"t")}</h2>
+    <p>${t("s"+n+"i")}</p>
+    ${cam}
+    ${S.camera==="loading"?"":stageHTML(overlay)}
+    ${caution?`<div class="caution"><strong><span aria-hidden="true">⚠ </span>${lang==="ur"?"احتیاط: ":"Caution: "}</strong>${caution}</div>`:""}
+    ${body}
+    ${S.camera==="live"&&S.recog==="found"&&n<6?`<button class="btn small secondary" type="button" data-act="move">${t("moveRing")}</button> `:""}
+    ${S.camera==="live"?`<button class="btn small secondary" type="button" data-act="draw">${t("useDrawing")}</button>`:
+      (S.forceDraw?`<button class="btn small secondary" type="button" data-act="cam">${t("useCamera")}</button>`:"")}
+    ${navRow(canNext,n===STEPS)}`;
+  attachVideo();
+  wireStep(canNext);
+}
+function wireStep(canNext){
+  document.getElementById("backBtn").onclick=()=>S.step===1?goHome():goStep(S.step-1);
+  document.getElementById("nextBtn").onclick=()=>{
+    if(!canNext){focusEl("#statusMsg")||focusEl("#hint");announce(S.step===5?t("s5hint"):t("looking",partName()));return;}
+    S.step===STEPS?goDone():goStep(S.step+1);
+  };
+  main.querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>{
+    const a=b.dataset.act;
+    if(a==="retry"||a==="move")startRecog();
+    if(a==="placehere")placeAt(S.cursor);
+    if(a==="draw"){stopCam();S.forceDraw=true;S.camera="draw";log("fallback-drawing");startRecog();}
+    if(a==="cam"){S.forceDraw=false;ensureCamera().then(startRecog);}
+    if(a==="recheck"){S.load=null;render();focusEl("[data-load=below]");}
+    if(a==="pressed"){S.started="waiting";render();announce(t("listening"));
+       if(document.getElementById("wizAuto").checked)S.timer=setTimeout(heardClick,2000);}
+  });
+  const st=main.querySelector(".stage.placing");
+  if(st){
+    st.onclick=e=>{const r=st.getBoundingClientRect();placeAt({x:(e.clientX-r.left)/r.width*100,y:(e.clientY-r.top)/r.height*100});};
+    st.onkeydown=e=>{
+      const d={ArrowLeft:[-3,0],ArrowRight:[3,0],ArrowUp:[0,-3],ArrowDown:[0,3]}[e.key];
+      if(d){e.preventDefault();S.cursor={x:S.cursor.x+d[0],y:S.cursor.y+d[1]};moveCursorRing();}
+      else if(e.key==="Enter"||e.key===" "){e.preventDefault();placeAt(S.cursor);}
+    };
+  }
+  main.querySelectorAll("button.btn[data-pick]").forEach(b=>b.onclick=()=>pick(b.dataset.pick));
+  main.querySelectorAll(".ring[data-pick]").forEach(b=>b.onclick=()=>pick(b.dataset.pick));
+  main.querySelectorAll("[data-load]").forEach(b=>b.onclick=()=>{S.load=b.dataset.load;log("load",{v:S.load});render();
+    announce(S.load==="below"?t("s3ok"):t("s3err"));focusEl(S.load==="above"?"#statusMsg":"#nextBtn");});
+  ["c1","c2"].forEach(id=>{const c=document.getElementById(id);if(c)c.onchange=()=>{S[id]=c.checked;render();focusEl("#"+id);
+    if(S.c1&&S.c2)announce(t("s5t")+" ✓");};});
+}
+function pick(v){S.pick=v;log("pick",{v});render();announce(v==="main"?t("s2ok"):t("s2err"));focusEl(v==="soft"?"#statusMsg":"#nextBtn");}
+function heardClick(){clearTimeout(S.timer);if(S.step!==6)return;S.started="done";log("lidclick");render();announce(t("s6ok"));focusEl("#statusMsg");}
+function renderDone(){
+  main.innerHTML=`${statusBox("ok",`<strong style="font-size:var(--t1)">${t("doneT")}</strong>`)}
+   <h2 id="screenTitle" tabindex="-1" class="visually-hidden">${t("doneT")}</h2>
+   <p>${t("doneP")}</p>
+   <div class="navrow"><button class="btn" type="button" id="againBtn">${t("again")}</button>
+   <button class="btn secondary" type="button" id="homeBtn">${t("home")}</button></div>`;
+  document.getElementById("againBtn").onclick=()=>goStep(1);
+  document.getElementById("homeBtn").onclick=goHome;
+}
+function focusEl(sel){const e=document.querySelector(sel);if(e){e.focus();return true;}return false;}
+
+/* ================= NAVIGATION ================= */
+async function goStep(n){
+  clearTimeout(S.timer);
+  S.screen="step"; S.step=n; S.recog="idle";
+  if(n===2)S.pick=null; if(n===3)S.load=null; if(n===5){S.c1=false;S.c2=false;} if(n===6)S.started="no";
+  await ensureCamera();
+  log("step",{n});
+  /* Live camera: if this part group was already placed (e.g. tray for step 2), keep it instead of asking again */
+  if(n===6){S.recog="found";render();}
+  else if(S.camera==="live"&&S.off[STEP_ANCH[n]]){S.recog="found";render();}
+  else startRecog();
+  focusEl("#screenTitle");
+}
+function goHome(){clearTimeout(S.timer);S.screen="home";S.step=0;render();focusEl("#screenTitle");}
+function goDone(){S.screen="done";log("done");render();announce(t("doneT"));focusEl("#statusMsg");}
+function stopCam(){if(S.stream){S.stream.getTracks().forEach(x=>x.stop());S.stream=null;}}
+
+/* ================= IS THIS NORMAL? (global dialog) ================= */
+const dlg=document.getElementById("normalDlg"), dbody=document.getElementById("normalBody");
+let opener=null;
+function openNormal(){opener=document.activeElement;renderNormalList();dlg.showModal();dbody.querySelector("h2").focus();}
+function renderNormalList(){
+  dbody.innerHTML=`<h2 id="normalTitle" tabindex="-1">${t("nTitle")}</h2><p>${t("nIntro")}</p>
+   <div class="empty">${t("nEmpty")}</div>
+   <div class="list">
+    <button class="btn secondary block" type="button" data-n="32">${t("n32")}</button>
+    <button class="btn secondary block" type="button" data-n="Click">${t("nClick")}</button>
+    <button class="btn secondary block" type="button" data-n="Count">${t("nCount")}</button>
+    <button class="btn secondary block" type="button" data-n="Other">${t("nOther")}</button></div>
+   <button class="btn block" type="button" id="dlgClose">${t("close")}</button>`;
+  dbody.querySelectorAll("[data-n]").forEach(b=>b.onclick=()=>showAnswer(b.dataset.n));
+  document.getElementById("dlgClose").onclick=()=>dlg.close();
+}
+function showAnswer(k){
+  const ok=k!=="Other";
+  dbody.innerHTML=`<h2 id="normalTitle" tabindex="-1">${t("n"+k)}</h2>
+   ${statusBox(ok?"ok":"info",t("n"+k+"a"))}
+   <div class="navrow"><button class="btn secondary" type="button" id="dlgBack">${t("backList")}</button>
+   <button class="btn" type="button" id="dlgClose">${t("close")}</button></div>`;
+  document.getElementById("dlgBack").onclick=()=>{renderNormalList();dbody.querySelector("h2").focus();};
+  document.getElementById("dlgClose").onclick=()=>dlg.close();
+  dbody.querySelector("h2").focus(); announce(t("n"+k+"a"));
+}
+dlg.addEventListener("close",()=>{if(opener)opener.focus();});
+document.getElementById("normalBtn").onclick=openNormal;
+
+/* ================= LANGUAGE + WIZARD ================= */
+document.getElementById("langBtn").onclick=()=>{lang=lang==="en"?"ur":"en";render();if(dlg.open)renderNormalList();
+  document.getElementById("langBtn").focus();announce(lang==="ur"?"اردو":"English");};
+const wiz=document.getElementById("wizard"), wt=document.getElementById("wizToggle");
+wt.onclick=()=>{wiz.hidden=!wiz.hidden;wt.setAttribute("aria-expanded",String(!wiz.hidden));};
+document.getElementById("wizFound").onclick=()=>setRecog("found");
+document.getElementById("wizMiss").onclick=()=>setRecog("miss");
+document.getElementById("wizClick").onclick=heardClick;
+document.getElementById("wizCam").onclick=()=>{stopCam();S.forceDraw=true;S.camera="draw";if(S.screen==="step"){S.recog==="found"?render():startRecog();}};
+document.getElementById("wizReset").onclick=()=>{stopCam();S.forceDraw=false;S.camera="unknown";S.off={};goHome();};
+document.getElementById("wizFail").onclick=()=>{S.forceMiss=true;announce("Next recognition will fail");};
+document.getElementById("wizLog").onclick=()=>{const b=new Blob([localStorage.getItem("konnect_log")||"[]"],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="konnect-session-log.json";a.click();};
+
+render();
+</script>
+</body>
+</html>
