@@ -2,6 +2,15 @@
 
 Newest first. Add a line here for every change you make.
 
+## 2026-11-04 (session 3): Part A items, wireframe update, two build fixes
+
+- Added the `part-a/` folder: README index, information architecture (card sort), wireframes write-up, accessibility audit (AI pre-check only; manual K and S logs left blank), critique record (AI reviewer, rounds 1 and 2), AI-use note, reflection (blank for the team).
+- Wireframes: added row 3 to the draw.io file (P1 Placing, P2 Checking, P3 Found for tap-to-place) and exported `part-a/wireframes.svg` (simplified rendering; the .drawio is the master).
+- Build fix: on the live camera the success text said "Found the …", which overclaimed because recognition is simulated. It now says "Ring placed on the …. Check it matches what you see." (English and AI-drafted Urdu).
+- Build fix: `scroll-padding-bottom` so the sticky Back/Next bar does not cover a focused control.
+- Updated `CONTEXT.md` (repo layout, Part A pointers, open work) and `README.md`.
+- Not tested: manual keyboard/screen-reader walkthroughs, live camera on a phone, Urdu layout.
+
 ## 2026-11-04 (session 2b): new palette and UI restyle
 
 **Why:** the team supplied a 4-colour palette and an inspiration screenshot (not to be copied 1:1).

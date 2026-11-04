@@ -34,6 +34,7 @@
   --r:16px; --shadow:0 2px 0 rgba(31,29,61,.18),0 6px 14px rgba(63,61,138,.22);
 }
 *{box-sizing:border-box}
+html{scroll-padding-bottom:110px}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:400 var(--t3)/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Nastaliq Urdu","Noto Sans Arabic",sans-serif}
 [lang="ur"] body, html[lang="ur"]{line-height:1.9}
 .app{max-width:520px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;background:var(--indigo)}
@@ -207,6 +208,7 @@ const T = {
   modeCam:"Live camera", modeDraw:"Drawing of NA-F135A1",
   looking:p=>`Looking for the ${p}… Line it up inside the white frame.`,
   found:p=>`Found the ${p}. It is ringed in the view.`,
+  placed:p=>`Ring placed on the ${p}. Check it matches what you see.`,
   notFound:p=>`Can't see the ${p}. Lift the lid fully, hold the phone about 40 cm away, and make sure the area is well lit.`,
   zoom:"Enlarge symbol",
   place:p=>`Tap the ${p} on the camera view to place the ring on it. Keyboard: arrow keys to move, then Enter.`,
@@ -266,6 +268,7 @@ const T = {
   modeCam:"لائیو کیمرا", modeDraw:"NA-F135A1 کی تصویر",
   looking:p=>`${p} تلاش کیا جا رہا ہے… اسے سفید فریم کے اندر لائیں۔`,
   found:p=>`${p} مل گیا۔ اس کے گرد دائرہ بنا دیا گیا ہے۔`,
+  placed:p=>`${p} پر دائرہ لگ گیا۔ دیکھ لیں کہ یہ آپ کی نظر آنے والی چیز سے ملتا ہے۔`,
   notFound:p=>`${p} نظر نہیں آ رہا۔ ڈھکن پورا اٹھائیں، فون تقریباً 40 سینٹی میٹر دور رکھیں، اور روشنی کا خیال رکھیں۔`,
   zoom:"نشان بڑا کریں",
   place:p=>`کیمرا ویو میں ${p} پر ٹیپ کریں تاکہ دائرہ اس پر لگ جائے۔ کی بورڈ: ایرو کیز سے حرکت دیں، پھر Enter دبائیں۔`,
@@ -426,10 +429,11 @@ function setRecog(v){
   if(S.camera==="live"&&S.recog==="searching"&&v==="found"&&S.cursor){
     const a=STEP_ANCH[S.step],c=ctr(a);S.off[a]=clampD(a,S.cursor.x-c.x,S.cursor.y-c.y);}
   S.recog=v; log("recog",{result:v}); render();
-  announce(v==="found"?t("found",partName()):t("notFound",partName()));
+  announce(v==="found"?foundMsg():t("notFound",partName()));
   if(v==="miss")focusEl("#statusMsg");
 }
 function partName(){return t("s"+S.step+"p");}
+const foundMsg=()=>S.camera==="live"?t("placed",partName()):t("found",partName());
 
 /* ================= RENDER ================= */
 function statusBox(kind,text,actions=""){
@@ -493,7 +497,7 @@ function renderStep(){
   const cam=camStatus();
   if(n===1){
     overlay=ring(Gs("tray"),rc,found?t("s1tag"):"");
-    body=recogStatus()||(found?statusBox("ok",t("found",partName())):"");
+    body=recogStatus()||(found?statusBox("ok",foundMsg()):"");
     caution=t("s1c"); canNext=found;
   }
   if(n===2){

@@ -9,6 +9,18 @@ Read this before changing anything. It covers the project, the decisions made, h
 - Keep the IDs consistent: F-01…, T1–T5, R1–R5, W1–W8, E0–E3, N1–N2, C01–C24, SP-x.
 - No names, student IDs or participant data in this repo.
 
+## 0. Repo layout
+
+| Path | What |
+|---|---|
+| `konnect-prototype.html` | Part B app (single file) |
+| `site/index.html` | Copy for GitHub Pages. Re-copy after every edit |
+| `part-a/` | Part A items as markdown: IA, wireframes, accessibility audit, critique record, AI-use note, reflection. Start at `part-a/README.md` |
+| `Konnect_D4_PartA_Wireframes.drawio` | Master wireframes (draw.io). Export: `part-a/wireframes.svg` |
+| `README.md`, `CHANGELOG.md`, `CONTEXT.md` | Run steps, every change, this file |
+
+Word documents, PDFs and earlier submissions are git-ignored (they hold names and student IDs).
+
 ## 1. Quick facts
 
 | Item | Value |
@@ -136,7 +148,7 @@ Changes from the closed check: "32" explained inline on the power-on step and in
 
 ## 6. Wireframes (Part A, draw.io, grayscale)
 
-`Konnect_D4_PartA_Wireframes.drawio`.
+`Konnect_D4_PartA_Wireframes.drawio`; full write-up in `part-a/02-wireframes.md`; static export `part-a/wireframes.svg`. **Row 3 (added in session 3): P1 Placing, P2 Checking, P3 Found for the live-camera tap-to-place flow** (P2 fails to E1; P3 "Move ring" returns to P1).
 - **Core path:** W1 Home, W2 Find tray, W3 MAIN WASH, W4 Load to line, W5 Power on and "32", W6 Heavy/Bedding and water Auto, W7 Start and lid click, W8 Done.
 - **Alternate and error paths:** E0 camera blocked → drawing; E1 part not recognised; E3 softener; E2 overfill; N1/N2 "Is this normal?" list and answer (reachable from any screen).
 - **Gestalt and hierarchy notes:** figure-ground (ring on camera view); proximity (label under its part); similarity (all "Normal" tags one style, all errors one style); common region (step frame, caution and status regions); visual hierarchy (title, instruction, camera, caution, status, Back/Next; only the primary action is filled); error hierarchy (error directly under the cause, recovery inside the box).
@@ -251,18 +263,22 @@ Done by an AI automated pre-check (this does **not** replace the manual walkthro
 | P4 | Home tab order: Language, Is this normal?, First wash, Facilitator | As intended |
 | P5 | Focus management and lang/dir | Verified |
 
-Deferred: D1 no text description of the live camera scene (mitigated: every step gives instruction and result as text); D2 Urdu unchecked; ~~D3 facilitator buttons 40 px~~ fixed to 44 px in session 2.
+Full log (P1 to P13, D1 to D5, blank K and S tables) is in `part-a/03-accessibility-audit.md`. New in session 3: P9 sticky bar no longer hides focused controls (scroll padding), P11 live-camera wording changed from "Found the …" to "Ring placed on the …. Check it matches what you see." because recognition is simulated.
+
+Deferred (earlier list): D1 no text description of the live camera scene (mitigated: every step gives instruction and result as text); D2 Urdu unchecked; ~~D3 facilitator buttons 40 px~~ fixed to 44 px in session 2.
 
 **New in session 2 (needs manual check):** the focusable camera view (`tabindex=0`, arrow keys + Enter) and the "Place ring" button are new keyboard paths and have not had a manual keyboard or screen-reader walkthrough.
 
 ## 10. Open work
 
-1. **Manual accessibility walkthroughs** (keyboard-only; screen reader: NVDA, TalkBack or VoiceOver). Method not yet decided. Log screen, expected vs actual, and POUR category. Then update fixed vs deferred, and re-check after later changes.
+**Part A status (session 3):** IA, wireframes (updated), critique record (AI reviewer, re-run on the current UI), AI-use note and the audit pre-check are written in `part-a/`. **Still open for Part A:** the manual keyboard and screen-reader walkthroughs (K and S tables), team confirmation of the critique, and the reflection.
+
+1. **Manual accessibility walkthroughs** (tables ready in `part-a/03-accessibility-audit.md`; include the new camera-view arrow-key placing and the sticky bar) (keyboard-only; screen reader: NVDA, TalkBack or VoiceOver). Method not yet decided. Log screen, expected vs actual, and POUR category. Then update fixed vs deferred, and re-check after later changes.
 2. **Test the live camera on a phone over HTTPS** (GitHub Pages). Steps 5 and 6 on the live camera have not been tested.
 3. **Urdu review** by a native reader.
 4. **Team confirmation** of the AI-reviewer critique record.
 5. **Reflection:** the team writes it in their own words.
-6. **Report** (Word, D2-style cover): update the Part B section for tap-to-place and the mock backend.
+6. **Report** (Word, D2-style cover): paste Part A from `part-a/*.md` and update Part B for tap-to-place, the mock backend and the new palette.
 7. **Video:** after the build is final; six segments, AI narration with captions, one focused feedback question (e.g. "When the lid clicks, can you tell 'lid locked, normal' apart from 'something went wrong'?" or one about the Step 5 checkboxes).
 8. Optional: add the team's own photos of the NA-F135A1 (no people) to replace the drawn stand-in.
 9. Known open critique points: Step 5's two checkboxes may annoy persona C (test in D5B); printed fallback for persona A deferred to D5.

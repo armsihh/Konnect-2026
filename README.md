@@ -4,13 +4,41 @@ CS3014 Applied HCI, Team 05. A phone-camera guide for setting up and starting a 
 
 > Read [CONTEXT.md](CONTEXT.md) first if you want to build on this. See [CHANGELOG.md](CHANGELOG.md) for every change.
 
+## Status: what's done and what's left
+
+**Done**
+- [x] Part B app: 6-step first-wash flow, live camera with tap-to-place, drawing fallback
+- [x] Three error paths (part not recognised, overfill, softener) plus camera-blocked
+- [x] "Is this normal?" help, English/Urdu, design system and palette, component states
+- [x] Mock backend (event log, simulated recognition) and facilitator panel
+- [x] Deployed on GitHub Pages
+- [x] Part A written: IA/card sort, wireframes (updated), critique record, AI-use note ([part-a/](part-a/README.md))
+- [x] AI accessibility pre-check
+- [x] Master context, changelog, run instructions
+
+**Left**
+- [ ] Test the live camera on a real phone over HTTPS (steps 5 and 6 on camera never tested)
+- [ ] Manual keyboard-only walkthrough, logged in `part-a/03-accessibility-audit.md`
+- [ ] Manual screen-reader walkthrough (NVDA or TalkBack), same file
+- [ ] Re-check Part A accessibility fixes after the last edits (Part B re-check)
+- [ ] Native Urdu reader checks all Urdu strings
+- [ ] Team confirms the critique record (`part-a/04-critique-record.md`)
+- [ ] Write the reflection in your own words (`part-a/06-reflection.md`)
+- [ ] Update the Word report with Part A and the new Part B behaviour
+- [ ] Record the video: 5 min max, captions, `05-Konnect-D4-Prototype.mp4`, one focused feedback question
+- [ ] Optional: replace the drawn machine with your own photos (no faces)
+- [ ] Everyone ready for the live demo
+
+Tick items here when you finish them and add a line to [CHANGELOG.md](CHANGELOG.md).
+
 ## Files
 
 | File | What it is |
 |---|---|
 | `konnect-prototype.html` | The working app (single file: HTML, CSS, JS, no framework, no build) |
 | `site/index.html` | Copy of the app for GitHub Pages. **Re-copy after every edit** (see below) |
-| `Konnect_D4_PartA_Wireframes.drawio` | Part A wireframes (open at app.diagrams.net) |
+| `part-a/` | D4 Part A as markdown (IA, wireframes, accessibility audit, critique, AI-use note, reflection). Start at `part-a/README.md` |
+| `Konnect_D4_PartA_Wireframes.drawio` | Part A wireframes (open at app.diagrams.net); export in `part-a/wireframes.svg` |
 | `CONTEXT.md` | Master context: project, decisions, design, how it works, open work |
 | `CHANGELOG.md` | Every change, newest first |
 
