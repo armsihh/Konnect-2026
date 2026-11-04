@@ -6,68 +6,95 @@
 <title>Konnect – First wash (D4 prototype)</title>
 <style>
 /* ============ DESIGN SYSTEM (D4 Part B2) ============
-   Palette: 1 brand + neutrals + 3 semantic colours. All text pairs >= 4.5:1.
+   Palette (from the team's 4-swatch palette): pink #F9B1B6, mauve #AD7099, violet #8A6499, indigo #3F3D8A.
+   Text-bearing roles: indigo (brand, buttons, headings), pink (accent surfaces, text on it is dark indigo).
+   Mauve is decorative only (white on mauve is 3.8:1, below 4.5:1). Semantic colours stay separate from the
+   brand so state is never confused with decoration: success green, error red, caution amber.
    Type scale (3 levels): --t1 26px heading, --t2 20px sub/label, --t3 18px body (no text below 16px).
-   Spacing scale: 4 / 8 / 16 / 24 / 32.                                     */
+   Spacing scale: 4 / 8 / 16 / 24 / 32.
+
+   HCI notes (Norman + Gestalt), also listed in CONTEXT.md:
+   - Signifiers/affordances: raised pill buttons with a shadow read as pressable; chevrons show "go";
+     the crosshair cursor and dashed ring show "tap here" on the camera view.
+   - Constraints: Next stays greyed until the step is done. Feedback: every action gets a status box + announcement.
+   - Mapping: the label sits under the part it names. Conceptual model: one ring-progress = where you are in 6 steps.
+   - Gestalt: common region (white cards, caution box, status box), proximity (title+count+ring grouped),
+     similarity (all primary actions indigo, all normal tags one style), figure-ground (white ring on camera),
+     closure/continuity (circular progress, 4-band palette stripe), hierarchy (title > instruction > camera > caution > status > nav). */
 :root{
-  --ink:#1B1F23; --muted:#4A5560; --line:#C9D0D7; --surface:#FFFFFF; --bg:#F2F4F6;
-  --brand:#0B5CAD; --brand-ink:#FFFFFF; --brand-dark:#084A8C;
+  --pink:#F9B1B6; --pink-soft:#FDEBED; --mauve:#AD7099; --violet:#8A6499; --indigo:#3F3D8A; --indigo-dark:#2E2C6B;
+  --ink:#1F1D3D; --muted:#55527A; --line:#D9D2E3; --surface:#FFFFFF; --bg:#F4EDF4;
+  --brand:#3F3D8A; --brand-ink:#FFFFFF; --brand-dark:#2E2C6B;
   --ok:#14692F; --ok-bg:#E3F4E8;
   --warn:#7A5200; --warn-bg:#FFF4D1;
   --err:#B42318; --err-bg:#FDE8E6;
-  --focus:#0B5CAD;
+  --focus:#3F3D8A;
   --t1:26px; --t2:20px; --t3:18px;
   --s1:4px; --s2:8px; --s3:16px; --s4:24px; --s5:32px;
-  --r:12px;
+  --r:16px; --shadow:0 2px 0 rgba(31,29,61,.18),0 6px 14px rgba(63,61,138,.22);
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:400 var(--t3)/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Nastaliq Urdu","Noto Sans Arabic",sans-serif}
 [lang="ur"] body, html[lang="ur"]{line-height:1.9}
-.app{max-width:520px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;background:var(--surface)}
+.app{max-width:520px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;background:var(--indigo)}
 h1,h2,h3{margin:0}
 h1{font-size:var(--t2);font-weight:700}
-h2{font-size:var(--t1);font-weight:700;line-height:1.25}
+h2{font-size:var(--t1);font-weight:700;line-height:1.25;color:var(--indigo-dark)}
 h3{font-size:var(--t2);font-weight:700}
 p{margin:0 0 var(--s3)}
 .visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-/* Header */
-header.top{display:flex;align-items:center;gap:var(--s2);padding:var(--s3);border-bottom:1px solid var(--line);background:var(--surface)}
-header.top .brandname{flex:1}
-header.top .model{display:block;font-size:16px;color:var(--muted);font-weight:400}
+/* Header: indigo hero + 4-band palette stripe */
+header.top{display:flex;align-items:center;gap:var(--s2);padding:var(--s3) var(--s3) var(--s5);color:#fff;
+  background:linear-gradient(135deg,var(--indigo) 0%,#4B3F90 60%,var(--violet) 130%)}
+header.top .brandname{flex:1;color:#fff}
+header.top .model{display:block;font-size:16px;color:#E9E4F5;font-weight:400}
+header.top .btn.secondary{background:transparent;color:#fff;border-color:#fff}
+header.top .btn.secondary:hover{background:rgba(255,255,255,.18)}
+header.top .btn:not(.secondary){background:var(--pink);border-color:var(--pink);color:var(--indigo-dark);box-shadow:none}
+header.top .btn:not(.secondary):hover{background:#FFC9CD;border-color:#FFC9CD}
+header.top :focus-visible{outline-color:#fff}
+.stripe{display:flex;height:8px;background:var(--indigo)}
+.stripe i{flex:1}.stripe i:nth-child(1){background:var(--pink)}.stripe i:nth-child(2){background:var(--mauve)}
+.stripe i:nth-child(3){background:var(--violet)}.stripe i:nth-child(4){background:var(--indigo-dark)}
 
-/* Buttons: one styled version, states default/hover/focus/active/disabled/loading */
-.btn{font:inherit;font-weight:600;min-height:48px;padding:var(--s2) var(--s3);border-radius:var(--r);border:2px solid var(--brand);background:var(--brand);color:var(--brand-ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:var(--s2)}
+/* Buttons: raised pill = signifier of pressable. States: default/hover/focus/active/disabled */
+.btn{font:inherit;font-weight:700;min-height:48px;padding:var(--s2) var(--s4);border-radius:999px;border:2px solid var(--brand);background:var(--brand);color:var(--brand-ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);box-shadow:var(--shadow)}
 .btn:hover{background:var(--brand-dark);border-color:var(--brand-dark)}
-.btn:active{transform:translateY(1px);background:#063a6e}
-.btn.secondary{background:var(--surface);color:var(--brand)}
-.btn.secondary:hover{background:#E8F0F9}
+.btn:active{transform:translateY(2px);box-shadow:none;background:#1F1D4D}
+.btn.secondary{background:var(--surface);color:var(--brand);box-shadow:none}
+.btn.secondary:hover{background:var(--pink-soft)}
 .btn.small{min-height:44px;font-size:16px;padding:var(--s1) var(--s3)}
-.btn[disabled],.btn[aria-disabled="true"]{background:#E3E7EB;border-color:#E3E7EB;color:#5E6873;cursor:not-allowed;transform:none}
+.btn[disabled],.btn[aria-disabled="true"]{background:#E6E3EC;border-color:#E6E3EC;color:#5E5A73;cursor:not-allowed;transform:none;box-shadow:none}
 :focus-visible{outline:3px solid var(--focus);outline-offset:3px}
 .btn.block{width:100%}
-.btn.wrong,.btn.wrong:hover{background:var(--err-bg);border-color:var(--err);color:var(--err)}
+.btn.wrong,.btn.wrong:hover{background:var(--err-bg);border-color:var(--err);color:var(--err);box-shadow:none}
 
-main{flex:1;padding:var(--s3)}
-.progress{display:flex;gap:var(--s1);margin:0 0 var(--s2)}
-.progress span{flex:1;height:6px;border-radius:3px;background:var(--line)}
-.progress span.done{background:var(--brand)}
-.progress span.now{background:var(--ink)}
+/* Main sheet rises over the hero (figure-ground) */
+main{flex:1;padding:var(--s4) var(--s3) var(--s3);background:var(--surface);border-radius:28px 28px 0 0;position:relative}
+.stephead{display:flex;align-items:center;gap:var(--s3);margin-bottom:var(--s3);padding:var(--s3);background:var(--pink-soft);border-radius:var(--r)}
+.stephead .ringprog{flex:0 0 auto}
 .stepcount{font-size:16px;color:var(--muted);margin-bottom:var(--s1);display:block}
 
-/* Task cards on home */
+/* Home */
+.homecard{display:flex;gap:var(--s3);align-items:center;background:var(--pink-soft);border-radius:var(--r);padding:var(--s3);margin-bottom:var(--s4)}
+.homeicon,.taskico{flex:0 0 auto;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--pink),var(--mauve))}
 .card{border:2px solid var(--line);border-radius:var(--r);padding:var(--s3);margin-bottom:var(--s3);background:var(--surface)}
-.taskbtn{width:100%;text-align:start;font:inherit;background:var(--surface);border:2px solid var(--brand);border-radius:var(--r);padding:var(--s3);cursor:pointer;color:var(--ink);display:block;margin-bottom:var(--s2)}
-.taskbtn:hover{background:#E8F0F9}
-.taskbtn[disabled]{border-color:var(--line);color:#5E6873;cursor:not-allowed;background:var(--bg)}
-.taskbtn strong{display:block;font-size:var(--t2)}
+.taskbtn{width:100%;text-align:start;font:inherit;background:var(--surface);border:2px solid var(--brand);border-radius:var(--r);padding:var(--s3);cursor:pointer;color:var(--ink);display:flex;gap:var(--s3);align-items:center;margin-bottom:var(--s2);box-shadow:var(--shadow)}
+.taskbtn:hover{background:var(--pink-soft)}
+.taskbtn .go{margin-inline-start:auto;font-size:28px;color:var(--brand);font-weight:700}
+[dir="rtl"] .taskbtn .go{transform:scaleX(-1)}
+.taskbtn[disabled]{border-color:var(--line);color:#5E5A73;cursor:not-allowed;background:var(--bg);box-shadow:none}
+.taskbtn[disabled] .taskico{background:#E6E3EC}
+.taskbtn strong{display:block;font-size:var(--t2);color:var(--indigo-dark)}
+.taskbtn[disabled] strong{color:#5E5A73}
 
 /* Camera stage */
-.stage{position:relative;width:100%;aspect-ratio:3/4;background:#30363D;border-radius:var(--r);overflow:hidden;margin-bottom:var(--s3)}
+.stage{position:relative;width:100%;aspect-ratio:3/4;background:#30363D;border-radius:20px;overflow:hidden;margin-bottom:var(--s3);border:3px solid var(--indigo)}
 .stage video,.stage svg.machine{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .stage.placing{cursor:crosshair;touch-action:manipulation}
 .stage.placing .ring,.stage.placing .tag{pointer-events:none}
-.stage .mode{position:absolute;bottom:var(--s2);inset-inline-start:var(--s2);background:rgba(0,0,0,.72);color:#fff;font-size:16px;padding:2px var(--s2);border-radius:6px;z-index:3}
+.stage .mode{position:absolute;bottom:var(--s2);inset-inline-start:var(--s2);background:rgba(31,29,61,.82);color:#fff;font-size:16px;padding:2px var(--s2);border-radius:999px;z-index:3}
 .ring{position:absolute;border:4px solid #fff;border-radius:14px;box-shadow:0 0 0 3px rgba(0,0,0,.65),inset 0 0 0 3px rgba(0,0,0,.35);z-index:2;transition:border-color .2s}
 .ring.searching{border-style:dashed;animation:pulse 1.2s infinite}
 .ring.found{border-color:#7CF29A}
@@ -75,46 +102,54 @@ main{flex:1;padding:var(--s3)}
 .ring.pick{cursor:pointer;background:rgba(255,255,255,.08)}
 .ring.pick:hover{background:rgba(255,255,255,.2)}
 @keyframes pulse{50%{opacity:.45}}
-@media (prefers-reduced-motion:reduce){.ring.searching{animation:none}.spinner{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.ring.searching{animation:none}.status.loading .ico{animation:none!important}}
 .fullline{position:absolute;border-top:5px dashed #fff;box-shadow:0 2px 0 rgba(0,0,0,.6),0 -2px 0 rgba(0,0,0,.6);z-index:2}
-.tag{position:absolute;z-index:3;background:#fff;color:var(--ink);border-radius:8px;padding:2px var(--s2);font-size:16px;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.5);max-width:70%}
+.tag{position:absolute;z-index:3;background:#fff;color:var(--ink);border-radius:10px;padding:2px var(--s2);font-size:16px;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.5);max-width:70%}
 .tag.normal{border-inline-start:6px solid var(--ok)}
 .tag.bad{border-inline-start:6px solid var(--err)}
 
-/* Status / feedback messages */
+/* Status / feedback messages: one style per meaning (similarity) */
 .status{border-radius:var(--r);padding:var(--s3);margin-bottom:var(--s3);border:2px solid transparent;display:flex;gap:var(--s2);align-items:flex-start}
 .status .ico{font-weight:800;flex:0 0 auto;width:28px;height:28px;border-radius:50%;display:inline-grid;place-items:center;font-size:16px}
-.status.info{background:var(--bg);border-color:var(--line)}
+.status.info{background:var(--pink-soft);border-color:var(--pink)}
+.status.info .ico{background:var(--indigo);color:#fff}
 .status.ok{background:var(--ok-bg);border-color:var(--ok)}
 .status.ok .ico{background:var(--ok);color:#fff}
 .status.err{background:var(--err-bg);border-color:var(--err)}
 .status.err .ico{background:var(--err);color:#fff}
-.status.loading .ico{border:3px solid var(--line);border-top-color:var(--brand);animation:spin 1s linear infinite}
+.status.loading{background:var(--pink-soft);border-color:var(--line)}
+.status.loading .ico{border:3px solid var(--line);border-top-color:var(--indigo);animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .status p{margin:0}
 .status .actions{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s2)}
-.caution{background:var(--warn-bg);border-inline-start:6px solid var(--warn);padding:var(--s2) var(--s3);border-radius:8px;margin-bottom:var(--s3);color:#3D2900}
+.caution{background:var(--warn-bg);border-inline-start:6px solid var(--warn);padding:var(--s2) var(--s3);border-radius:10px;margin-bottom:var(--s3);color:#3D2900}
 .caution strong{color:var(--warn)}
 .choice{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2);margin-bottom:var(--s3)}
-.check{display:flex;gap:var(--s2);align-items:center;min-height:48px;padding:var(--s2);border:2px solid var(--line);border-radius:var(--r);margin-bottom:var(--s2);cursor:pointer}
-.check input{width:24px;height:24px}
-.navrow{display:flex;gap:var(--s2);margin-top:var(--s3)}
+.check{display:flex;gap:var(--s2);align-items:center;min-height:48px;padding:var(--s2) var(--s3);border:2px solid var(--line);border-radius:var(--r);margin-bottom:var(--s2);cursor:pointer}
+.check:has(input:checked){border-color:var(--indigo);background:var(--pink-soft)}
+.check input{width:24px;height:24px;accent-color:var(--indigo)}
+
+/* Bottom action bar stays in view (visibility) */
+.navrow{display:flex;gap:var(--s2);margin-top:var(--s3);position:sticky;bottom:0;background:var(--surface);padding:var(--s3) 0 var(--s2);z-index:5;border-top:1px solid var(--line)}
 .navrow .btn{flex:1}
 
+.bigcheck{width:96px;height:96px;border-radius:50%;margin:0 auto var(--s3);display:grid;place-items:center;font-size:48px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--ok),#2E8B4B)}
+
 /* Dialog: Is this normal? */
-dialog{border:none;border-radius:var(--r);padding:0;max-width:480px;width:calc(100% - 32px)}
-dialog::backdrop{background:rgba(0,0,0,.55)}
-.dlg{padding:var(--s4)}
+dialog{border:none;border-radius:24px;padding:0;max-width:480px;width:calc(100% - 32px)}
+dialog::backdrop{background:rgba(31,29,61,.65)}
+.dlg{padding:var(--s4) var(--s3) var(--s3);border-top:8px solid var(--pink)}
+.dlg h2{margin-bottom:var(--s2)}
 .dlg .list button{margin-bottom:var(--s2)}
-.empty{border:2px dashed var(--line);border-radius:var(--r);padding:var(--s3);color:var(--muted);margin-bottom:var(--s3)}
+.empty{border:2px dashed var(--mauve);border-radius:var(--r);padding:var(--s3);color:var(--muted);margin-bottom:var(--s3);background:var(--pink-soft)}
 
 /* Wizard-of-Oz facilitator panel (clearly separated, not part of the user UI) */
 .wizard{border-top:4px dashed #8A6D00;background:#FFFBEA;padding:var(--s3);font-size:16px}
 .wizard h3{font-size:16px;color:#5A4500;margin-bottom:var(--s2)}
 .wizard .row{display:flex;flex-wrap:wrap;gap:var(--s2);margin-bottom:var(--s2)}
-.wizard .btn{min-height:44px;font-size:16px;background:#5A4500;border-color:#5A4500}
+.wizard .btn{min-height:44px;font-size:16px;background:#5A4500;border-color:#5A4500;box-shadow:none}
 .wizard .btn.secondary{background:#fff;color:#5A4500}
-footer.foot{padding:var(--s2) var(--s3);font-size:16px;color:var(--muted);border-top:1px solid var(--line);display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap}
+footer.foot{padding:var(--s2) var(--s3);font-size:16px;color:var(--muted);background:var(--surface);border-top:1px solid var(--line);display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -124,6 +159,7 @@ footer.foot{padding:var(--s2) var(--s3);font-size:16px;color:var(--muted);border
     <button class="btn secondary small" id="langBtn" type="button" lang="ur">اردو</button>
     <button class="btn small" id="normalBtn" type="button" data-t="isNormalBtn">Is this normal?</button>
   </header>
+  <div class="stripe" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 
   <main id="main" tabindex="-1"></main>
 
@@ -402,9 +438,11 @@ function statusBox(kind,text,actions=""){
     <span class="ico" aria-hidden="true">${ico}</span><div><p>${text}</p>${actions?`<div class="actions">${actions}</div>`:""}</div></div>`;
 }
 function progress(){
-  let h='<div class="progress" aria-hidden="true">';
-  for(let i=1;i<=STEPS;i++)h+=`<span class="${i<S.step?"done":i===S.step?"now":""}"></span>`;
-  return h+"</div>";
+  const C=2*Math.PI*26, d=C*(S.step/STEPS);
+  return `<svg class="ringprog" width="64" height="64" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+    <circle cx="32" cy="32" r="26" fill="#fff" stroke="#F9B1B6" stroke-width="7"/>
+    <circle cx="32" cy="32" r="26" fill="none" stroke="#3F3D8A" stroke-width="7" stroke-linecap="round" stroke-dasharray="${d} ${C}" transform="rotate(-90 32 32)"/>
+    <text x="32" y="38" text-anchor="middle" font-size="16" font-weight="700" fill="#2E2C6B" font-family="system-ui,sans-serif">${S.step}/${STEPS}</text></svg>`;
 }
 function render(){
   document.documentElement.lang=lang; document.documentElement.dir=lang==="ur"?"rtl":"ltr";
@@ -417,11 +455,12 @@ function render(){
   renderStep();
 }
 function renderHome(){
-  main.innerHTML=`<h2 id="screenTitle" tabindex="-1">${t("homeTitle")}</h2>
+  main.innerHTML=`<div class="homecard"><span class="homeicon" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="5" y="3" width="22" height="26" rx="4" fill="#fff" stroke="#2E2C6B" stroke-width="2"/><circle cx="16" cy="18" r="6.5" fill="#F9B1B6" stroke="#2E2C6B" stroke-width="2"/><rect x="8" y="6" width="6" height="3" rx="1" fill="#2E2C6B"/></svg></span>
+   <div><h2 id="screenTitle" tabindex="-1">${t("homeTitle")}</h2></div></div>
    <p>${t("homeIntro")}</p>
-   <button class="taskbtn" type="button" id="goFirst"><strong>${t("taskFirst")}</strong>${t("taskFirstSub")}</button>
-   <button class="taskbtn" type="button" disabled><strong>${t("taskOther")}</strong>${t("taskOtherSub")}</button>
-   <p style="color:var(--muted);font-size:16px">${t("modelCheck")}</p>`;
+   <button class="taskbtn" type="button" id="goFirst"><span class="taskico" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="5" y="3" width="22" height="26" rx="4" fill="#fff" stroke="#2E2C6B" stroke-width="2"/><circle cx="16" cy="18" r="6.5" fill="#F9B1B6" stroke="#2E2C6B" stroke-width="2"/><rect x="8" y="6" width="6" height="3" rx="1" fill="#2E2C6B"/></svg></span><span><strong>${t("taskFirst")}</strong>${t("taskFirstSub")}</span><span class="go" aria-hidden="true">›</span></button>
+   <button class="taskbtn" type="button" disabled><span class="taskico" aria-hidden="true"></span><span><strong>${t("taskOther")}</strong>${t("taskOtherSub")}</span></button>
+   <p style="color:var(--muted);font-size:16px;margin-top:var(--s3)">${t("modelCheck")}</p>`;
   document.getElementById("goFirst").onclick=()=>goStep(1);
 }
 function navRow(canNext,last){
@@ -509,8 +548,8 @@ function renderStep(){
          body=statusBox("ok",t("s6ok"));}
     canNext=S.started==="done";
   }
-  main.innerHTML=`${progress()}<span class="stepcount">${t("stepOf",n,STEPS)}</span>
-    <h2 id="screenTitle" tabindex="-1">${t("s"+n+"t")}</h2>
+  main.innerHTML=`<div class="stephead">${progress()}<div><span class="stepcount">${t("stepOf",n,STEPS)}</span>
+    <h2 id="screenTitle" tabindex="-1">${t("s"+n+"t")}</h2></div></div>
     <p>${t("s"+n+"i")}</p>
     ${cam}
     ${S.camera==="loading"?"":stageHTML(overlay)}
@@ -558,7 +597,7 @@ function wireStep(canNext){
 function pick(v){S.pick=v;log("pick",{v});render();announce(v==="main"?t("s2ok"):t("s2err"));focusEl(v==="soft"?"#statusMsg":"#nextBtn");}
 function heardClick(){clearTimeout(S.timer);if(S.step!==6)return;S.started="done";log("lidclick");render();announce(t("s6ok"));focusEl("#statusMsg");}
 function renderDone(){
-  main.innerHTML=`${statusBox("ok",`<strong style="font-size:var(--t1)">${t("doneT")}</strong>`)}
+  main.innerHTML=`<div class="bigcheck" aria-hidden="true">✓</div>${statusBox("ok",`<strong style="font-size:var(--t1)">${t("doneT")}</strong>`)}
    <h2 id="screenTitle" tabindex="-1" class="visually-hidden">${t("doneT")}</h2>
    <p>${t("doneP")}</p>
    <div class="navrow"><button class="btn" type="button" id="againBtn">${t("again")}</button>

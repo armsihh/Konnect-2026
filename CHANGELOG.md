@@ -2,6 +2,21 @@
 
 Newest first. Add a line here for every change you make.
 
+## 2026-11-04 (session 2b): new palette and UI restyle
+
+**Why:** the team supplied a 4-colour palette and an inspiration screenshot (not to be copied 1:1).
+
+- New palette: pink `#F9B1B6`, mauve `#AD7099`, violet `#8A6499`, indigo `#3F3D8A` (sampled by eye from the swatch image; confirm exact hex values if the team has them). Indigo is brand/buttons/headings; pink is accent surfaces; **mauve is decorative only** (white on mauve is 3.8:1). Success green, error red and caution amber are kept separate so state is never confused with decoration.
+- Indigo hero header with a 4-band palette stripe; white sheet with rounded top; "Is this normal?" is a pink pill (dark indigo text, about 5.3:1).
+- Pill buttons with a raised shadow (signifier of pressable); radius 16 px cards; bottom action bar (Back / Next) now sticky so it is always visible.
+- Step header is a pink card with a circular progress ring (n/6) replacing the segmented bar. The ring is decorative (`aria-hidden`); the "Step n of 6" text remains.
+- Home: icon card plus task button with a chevron (flips in RTL); the disabled task is visibly muted.
+- Done screen: large green check (decorative).
+- Dialog: pink top edge and tinted empty state. Info status boxes use pink-soft with an indigo icon.
+- Focus ring is indigo on light surfaces and white on the indigo header.
+- Behaviour, text, focus management and ARIA are unchanged. **Contrast of the new pairs has been checked by calculation only; re-run the manual accessibility checks.**
+- Not yet checked: Urdu/RTL layout with the new styles, live camera on a phone.
+
 ## 2026-11-04 (session 2): tap-to-place on the live camera
 
 **Why:** the old overlay used fixed screen positions. On a real machine the rings would not line up with the real tray or panel.

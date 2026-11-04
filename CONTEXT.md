@@ -198,15 +198,39 @@ Full EN/UR string tables `T.en` / `T.ur`. Switching sets `<html lang="ur" dir="r
 
 ## 8. Design system
 
-| Token | Hex | Contrast |
+Palette (team-supplied 4 swatches, sampled by eye; confirm exact hex): pink `#F9B1B6`, mauve `#AD7099`, violet `#8A6499`, indigo `#3F3D8A`.
+
+| Token | Hex | Role and contrast |
 |---|---|---|
-| ink | #1B1F23 | 16.6:1 on white |
-| muted | #4A5560 | 7.6:1 |
-| brand / focus | #0B5CAD | 6.7:1 (white on brand) |
-| success | #14692F on #E3F4E8 | 5.9:1 |
-| caution | #7A5200 / #3D2900 on #FFF4D1 | 6.3 / 12.6:1 |
-| error | #B42318 on #FDE8E6 | 5.6:1 |
-| disabled | #5E6873 on #E3E7EB | 4.6:1 |
+| indigo (brand, focus) | #3F3D8A | Buttons, headings, focus. White on indigo about 9:1 |
+| indigo-dark | #2E2C6B | Heading text, hover |
+| pink | #F9B1B6 | Accent surface and header pill; dark indigo text on it about 5.3:1 |
+| pink-soft | #FDEBED | Cards, info/loading status backgrounds |
+| violet | #8A6499 | Gradient and decoration; white on violet about 4.8:1 |
+| mauve | #AD7099 | **Decorative only** (white on mauve 3.8:1) |
+| ink / muted | #1F1D3D / #55527A | Text; muted about 7.3:1 on white |
+| success | #14692F on #E3F4E8 | Semantic, kept apart from brand |
+| caution | #7A5200 / #3D2900 on #FFF4D1 | Semantic |
+| error | #B42318 on #FDE8E6 | Semantic |
+| disabled | #5E5A73 on #E6E3EC | About 4.6:1 |
+
+Contrast values are calculated, not tool-verified. Re-check with a contrast tool after changing colours.
+
+**UI concepts applied (Norman and Gestalt):**
+
+| Concept | Where |
+|---|---|
+| Signifiers and affordances | Raised pill buttons; chevron on the task button; crosshair cursor and dashed ring on the camera view |
+| Constraints | Next greyed until the step is done; SOFTENER and "above the line" block progress |
+| Feedback | Every action gives a status box and a screen-reader announcement; loading states for camera, checking, waiting |
+| Mapping | Label sits under the part it names; ring and compartments move together |
+| Conceptual model | One progress ring "n/6" plus one step per screen |
+| Visibility | Sticky Back/Next bar; "Is this normal?" always in the header |
+| Proximity and common region | Ring, step count and title grouped in one card; caution and status boxes |
+| Similarity | All primary actions indigo; all "Normal" tags and all errors one style each |
+| Figure-ground | White sheet over the indigo hero; white ring on the camera view |
+| Closure and continuity | Circular progress; 4-band palette stripe |
+| Hierarchy | Title, instruction, camera, caution, status, nav |
 
 - Type: 26 px bold heading, 20 px bold sub/label, 18 px body, 16 px minimum.
 - Spacing: 4/8/16/24/32. Radius 12. Touch targets 48 px (44 px for small).
